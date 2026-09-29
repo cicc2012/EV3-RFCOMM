@@ -11,13 +11,14 @@ We can use the BTConnector and wait for a connection with NXTConnection.RAW mode
 
 You can find the [BTServer.java](/src/EV3/BTServer.java) program to start the server side and wait for the client to connect. Please put both `BTServer.java` and `BTConnection.java` (from [here](/src/EV3/BTConnection.java)) under a package named `bluetooth`, or please change the package declaration.
 
-**Please note**: there is well-known leJOS gotcha - avoid using BufferedReader over NXTConnection streams. You should read raw bytes as the example program above. 
+**Please note**: there is a leJOS problem - avoid using BufferedReader over NXTConnection streams. You should read raw bytes as the example program above: we will have a low rate Bluetooth communication, so readLine() method should be OK. 
 
 ## 2. On the Pi side
 The underlying protocol for this Bluetooth communication is independent from the programming language used, so we can have Python program on the Pi as the client. You can find the [example code here](/src/Pi/bluetooth_client.py). Once the server is ready and listening, then you can start this client program. 
 
 **Please pay attention**: 
 - When sending data, you need to append "\r\n" at the end of message. 
+- This client side program on the Pi can be embedded into the computer vision task: detect the parking bay -> calculate the trajectory -> send control command only once in each task. 
 - If the Pi streams motor commands 60 times a second, the EV3's buffer will lag behind reality. Please avoid sending movement updats on every single OpenCV frame.
 - Non-Blocking Control: Have the leJOS program run motor movements in a background thread or use non-blocking motor calls (motor.rotate(angle, true)), so the EV3 never freezes waiting for the next Bluetooth command while the car is moving.
 - You need to align the navigation commands sent from the Pi with the actual control on EV3, e.g., arc moves need a radius and an angle, and the units and signs should be consistent, etc.
